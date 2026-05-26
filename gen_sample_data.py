@@ -9,7 +9,7 @@ import numpy as np
 from pathlib import Path
 from datetime import datetime, timedelta
 
-OUT_DIR = Path("C:/Users/Lyon/Desktop/scp_models/sample_data")
+OUT_DIR = Path("C:/Users/Lyon/Desktop/scp_models/data_input")
 np.random.seed(42)
 
 # ============================================================
@@ -18,9 +18,9 @@ np.random.seed(42)
 print("生成 historical_sales.csv ...")
 
 sku_config = {
-    "SKU001": {"base": 150, "trend": 0.5, "season_amp": 30, "price": 45.0},
-    "SKU002": {"base": 100, "trend": 0.3, "season_amp": 15, "price": 32.0},
-    "SKU003": {"base": 220, "trend": 0.8, "season_amp": 50, "price": 78.0},
+    "CHUCHU_01": {"base": 20, "trend": 0.3, "season_amp": 5, "price": 45.0},
+    "CHUCHU_02": {"base": 14, "trend": 0.2, "season_amp": 3, "price": 32.0},
+    "CHUCHU_03": {"base": 28, "trend": 0.4, "season_amp": 7, "price": 78.0},
 }
 
 channels = ["亚马逊", "独立站"]
@@ -56,7 +56,7 @@ while current <= end_date:
     current += timedelta(days=1)
 
 df_sales = pd.DataFrame(rows)
-df_sales.to_csv(OUT_DIR / "historical_sales.csv", index=False, encoding="utf-8-sig")
+df_sales.to_csv(OUT_DIR / "Sales_data.csv", index=False, encoding="utf-8-sig")
 print(f"  → {len(df_sales)} 行, {df_sales['SKU'].nunique()} SKU, {df_sales['渠道'].nunique()} 渠道")
 print(f"  日期范围: {df_sales['日期'].min()} ~ {df_sales['日期'].max()}")
 
@@ -74,14 +74,14 @@ forecast_rows = []
 # 24个月历史人工预测（基于实际值加偏置，模拟销售人员的乐观/保守）
 for _, row in monthly_actual.iterrows():
     actual = row["销量"]
-    # 人工预测：实际值 + 偏置（5%~15%误差），模拟销售人员预测不完美
-    bias = np.random.choice([-0.1, -0.05, 0.0, 0.05, 0.10, 0.15])
-    manual_fc = int(actual * (1 + bias) * np.random.uniform(0.90, 1.10))
+    # 人工预测：实际值 + 正向偏置（预测偏乐观），目标达成率 ~85%
+    bias = np.random.choice([0.10, 0.13, 0.16, 0.18, 0.20, 0.23])  # 平均偏+16.7%
+    manual_fc = int(actual * (1 + bias) * np.random.uniform(0.95, 1.05))  # 缩窄随机范围
     manual_fc = max(1, manual_fc)
     forecast_rows.append({
         "SKU": row["SKU"],
-        "月份": row["月份"],
-        "人工预测量": manual_fc,
+        "日期": row["月份"],         # 列名改为"日期"匹配 Sales_forecasting.csv
+        "预测值": manual_fc,          # 列名改为"预测值"
         "类型": "历史",
     })
 
@@ -99,13 +99,13 @@ for sku in sku_config:
         manual_fc = max(1, manual_fc)
         forecast_rows.append({
             "SKU": sku,
-            "月份": month_str,
-            "人工预测量": manual_fc,
+            "日期": month_str,        # 列名改为"日期"
+            "预测值": manual_fc,       # 列名改为"预测值"
             "类型": "未来",
         })
 
 df_forecast = pd.DataFrame(forecast_rows)
-df_forecast.to_csv(OUT_DIR / "manual_forecast.csv", index=False, encoding="utf-8-sig")
+df_forecast.to_csv(OUT_DIR / "Sales_forecasting.csv", index=False, encoding="utf-8-sig")  # 文件名对齐
 print(f"  → {len(df_forecast)} 行")
 print(f"  历史: {len(df_forecast[df_forecast['类型']=='历史'])} 行, "
       f"未来: {len(df_forecast[df_forecast['类型']=='未来'])} 行")
