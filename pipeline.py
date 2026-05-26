@@ -128,4 +128,5 @@ def run_pipeline(
         "supply_plan": supply_plan_df,                   # 采购计划表
         "shipment_plan": shipment_plan_df,               # 发货计划表
         "df_inventory": df_inventory,                    # 原始库存数据（备用）
+        "df_sales": df_sales,                            # 原始日销量数据（历史看板用）
     }

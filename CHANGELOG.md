@@ -17,6 +17,17 @@
 
 ---
 
+---
+
+## 2026-05-26 22:55
+
+### Added
+- **历史销量看板**（Tab 5）：SKU/渠道/日期三筛选器 + 日销量折线图 + 渠道占比饼图 + 明细表 + CSV 导出
+- `pipeline.py` 暴露 `df_sales` 原始日销量数据
+- `utils/viz.py` 新增 `plot_sales_trend()` 和 `plot_channel_pie()`
+
+---
+
 ## 2026-05-26 22:38
 
 ### Changed

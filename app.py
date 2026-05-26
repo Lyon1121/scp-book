@@ -143,8 +143,8 @@ with st.spinner("运行中..."):                               # 显示 Loading 
 # ============================================================
 # 四页 Tab Dashboard
 # ============================================================
-tab1, tab2, tab3, tab4 = st.tabs([                         # st.tabs 创建多个标签页
-    " 需求预测", " 库存计划", " 供应计划", " 发货计划",       # 四个 Tab 的名字
+tab1, tab2, tab3, tab4, tab5 = st.tabs([                         # st.tabs 创建多个标签页
+    " 需求预测", " 库存计划", " 供应计划", " 发货计划", " 历史销量看板",       # 五个 Tab 的名字
 ])
 
 
@@ -330,3 +330,71 @@ with tab4:
         # 导出按钮
         csv = ship.to_csv(index=False).encode("utf-8-sig")
         st.download_button("导出发货计划 CSV", csv, "shipment_plan.csv", "text/csv")
+
+
+# ============================================================
+# Tab 5: 历史销量看板
+# ============================================================
+with tab5:
+    df = result["df_sales"].copy()                           # 原始日销量数据
+
+    # 日期格式统一
+    df["日期_dt"] = pd.to_datetime(df["日期"])               # 转为 datetime
+
+    # ---- 筛选器 ----
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        sku_list = sorted(df["SKU"].unique())
+        selected_skus = st.multiselect("SKU", sku_list, default=sku_list)
+    with col2:
+        channel_list = sorted(df["渠道"].unique())
+        selected_channels = st.multiselect("渠道", channel_list, default=channel_list)
+    with col3:
+        date_range = st.date_input(
+            "日期范围",
+            value=(df["日期_dt"].min(), df["日期_dt"].max()),
+            min_value=df["日期_dt"].min().date(),
+            max_value=df["日期_dt"].max().date(),
+        )
+
+    # 应用筛选
+    mask = (
+        df["SKU"].isin(selected_skus) &
+        df["渠道"].isin(selected_channels)
+    )
+    if len(date_range) == 2:
+        mask &= (df["日期_dt"] >= pd.Timestamp(date_range[0])) & (df["日期_dt"] <= pd.Timestamp(date_range[1]))
+    filtered = df[mask]
+
+    if filtered.empty:
+        st.warning("筛选条件下无数据")
+        st.stop()
+
+    # ---- 汇总指标 ----
+    total_sales = filtered["销量"].sum()
+    avg_daily = int(filtered.groupby(filtered["日期_dt"].dt.date)["销量"].sum().mean()) if len(filtered) > 0 else 0
+    sku_count = filtered["SKU"].nunique()
+    record_count = len(filtered)
+
+    cols = st.columns(4)
+    cols[0].markdown(f'''<div class="metric-card"><div class="metric-value">{total_sales:,}</div><div class="metric-label">总销量 (件)</div></div>''', unsafe_allow_html=True)
+    cols[1].markdown(f'''<div class="metric-card"><div class="metric-value">{avg_daily:,}</div><div class="metric-label">日均销量 (件)</div></div>''', unsafe_allow_html=True)
+    cols[2].markdown(f'''<div class="metric-card"><div class="metric-value">{sku_count}</div><div class="metric-label">SKU 数</div></div>''', unsafe_allow_html=True)
+    cols[3].markdown(f'''<div class="metric-card"><div class="metric-value">{record_count:,}</div><div class="metric-label">记录数</div></div>''', unsafe_allow_html=True)
+
+    st.divider()
+
+    # ---- 图表 ----
+    col_l, col_r = st.columns(2)
+    with col_l:
+        st.plotly_chart(viz.plot_sales_trend(filtered), use_container_width=True)
+    with col_r:
+        st.plotly_chart(viz.plot_channel_pie(filtered), use_container_width=True)
+
+    # ---- 明细表 ----
+    with st.expander("明细数据"):
+        display_df = filtered[["SKU", "日期", "销量", "渠道"]].sort_values(["日期", "SKU"])
+        st.dataframe(display_df, use_container_width=True)
+
+        csv = display_df.to_csv(index=False).encode("utf-8-sig")
+        st.download_button("导出筛选结果 CSV", csv, "sales_filtered.csv", "text/csv")

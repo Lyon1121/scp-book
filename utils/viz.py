@@ -235,3 +235,71 @@ def plot_inventory_structure(df: pd.DataFrame) -> go.Figure:
         barmode="stack",                                   # "stack" = 堆叠柱状图
     )
     return fig
+
+
+# ============================================================
+# 图5: 历史销量趋势（日级折线图）
+# ============================================================
+def plot_sales_trend(df: pd.DataFrame) -> go.Figure:
+    """
+    日销量趋势折线图：每个 SKU 一条线
+
+    Args:
+        df: 过滤后的日级销量 DataFrame（列: SKU, 日期, 销量, 渠道）
+
+    Returns:
+        plotly Figure 对象
+    """
+    fig = go.Figure()
+
+    skus = df["SKU"].unique()
+    for sku in skus:
+        sku_df = df[df["SKU"] == sku].groupby("日期")["销量"].sum().reset_index()  # 按日汇总（合并渠道）
+        fig.add_trace(go.Scatter(
+            x=sku_df["日期"], y=sku_df["销量"],
+            mode="lines",                                # 纯折线，不加 markers（日数据太多）
+            name=sku,
+            line=dict(width=1.5),
+        ))
+
+    fig.update_layout(
+        title="日销量趋势",
+        xaxis_title="日期",
+        yaxis_title="销量（件）",
+        template="plotly_white",
+        font=dict(color="#333"),
+        hovermode="x unified",                           # 悬停显示同一 X 的所有线
+    )
+    return fig
+
+
+# ============================================================
+# 图6: 渠道占比饼图
+# ============================================================
+def plot_channel_pie(df: pd.DataFrame) -> go.Figure:
+    """
+    渠道销量占比饼图
+
+    Args:
+        df: 过滤后的日级销量 DataFrame（列: SKU, 日期, 销量, 渠道）
+
+    Returns:
+        plotly Figure 对象
+    """
+    channel_sum = df.groupby("渠道")["销量"].sum().reset_index()
+
+    fig = go.Figure()
+    fig.add_trace(go.Pie(
+        labels=channel_sum["渠道"],
+        values=channel_sum["销量"],
+        marker=dict(colors=["#333", "#999"]),           # 黑白灰配色
+        textinfo="label+percent",                        # 显示标签 + 百分比
+        hole=0.3,                                        # 中间挖空 = 甜甜圈图
+    ))
+
+    fig.update_layout(
+        title="渠道销量占比",
+        template="plotly_white",
+        font=dict(color="#333"),
+    )
+    return fig
