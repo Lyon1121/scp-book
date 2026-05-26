@@ -95,3 +95,10 @@
 ### tests/test_demand_forecast.py
 ### tests/test_inventory_plan.py
 ### tests/test_supply_ship.py
+
+## 📋 维护文档
+### CHANGELOG.md（更新日志，日期版本）
+### PROGRESS.md（进度快照，上下文恢复）
+### README.md（项目说明 + 快速开始）
+### architecture.md（思维导图源文件）
+### architecture.html（交互式思维导图）
