@@ -115,3 +115,11 @@ python -m http.server 8765    # 思维导图（architecture.html）
 - CSV 列名：中文（SKU/日期/销量/渠道）
 - 修改确认：阶段性确认后推 GitHub
 - 注释要求：每行代码后面加 # 注释
+
+## 维护规则（AI 自检清单）
+
+每次功能迭代后，需自查是否更新以下文件：
+- [ ] `CHANGELOG.md` — 新条目，日期精确到分钟
+- [ ] `PROGRESS.md` — 进度、已知问题、待优化清单
+- [ ] `architecture.md` — 新增/改名模块同步到思维导图
+- [ ] `git commit + push` — 阶段性确认后推送

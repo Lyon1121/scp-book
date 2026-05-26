@@ -3,6 +3,7 @@
 所有值得记录的项目变更，按日期倒序。
 
 格式说明：
+- 标题用 `YYYY-MM-DD HH:MM` 精确到分钟
 - **Added** — 新增功能
 - **Changed** — 功能修改
 - **Fixed** — Bug 修复
@@ -10,7 +11,26 @@
 
 ---
 
-## 2026-05-26
+## 2026-05-26 20:51
+
+### Added
+- **CHANGELOG.md**：更新日志，每次功能迭代后追加一条
+- **PROGRESS.md**：进度快照（上下文恢复文档），含项目定位、架构、参数、用户偏好
+
+### Changed
+- CHANGELOG 日期格式改为精确到分钟（YYYY-MM-DD HH:MM）
+
+---
+
+## 2026-05-26 20:30
+
+### Added
+- **交互式思维导图**：architecture.md + architecture.html（Markmap），展示完整架构
+- **行内注释**：12个核心 Python 文件全部添加详细 # 注释
+
+---
+
+## 2026-05-26 20:05
 
 ### Added
 - **四模块供应链计划模型**：需求预测、库存计划、供应计划、发货计划全部实现
@@ -21,8 +41,6 @@
 - **Pipeline 串联**：一键 run_pipeline() 跑通四个模块
 - **Streamlit Dashboard**：四页黑白灰界面（需求预测→库存计划→供应计划→发货计划）
 - **示例数据**：24个月×3 SKU 日销量（含渠道列），24月历史+6月未来人工预测 CSV
-- **交互式思维导图**：architecture.md + architecture.html（Markmap），展示完整架构
-- **行内注释**：12个核心 Python 文件全部添加详细 # 注释
 - **Git 版本管理**：连接 GitHub 仓库 Lyon1121/scp-book
 
 ### Changed
