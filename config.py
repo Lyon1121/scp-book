@@ -17,7 +17,7 @@ from pathlib import Path  # pathlib 用于跨平台处理文件路径
 # 路径配置
 # ============================================================
 ROOT_DIR = Path(__file__).parent  # 项目根目录 = 当前 config.py 所在文件夹
-DATA_DIR = ROOT_DIR / "sample_data"  # 示例数据目录，存放所有 CSV 模板
+DATA_DIR = ROOT_DIR / "data_input"  # 数据输入目录，存放用户上传的真实/模拟 CSV 数据
 
 # ============================================================
 # 需求预测 —— 默认参数

@@ -36,7 +36,11 @@ def load_csv(file_path: str) -> pd.DataFrame:
     if not path.exists():                        # 检查文件是否真的存在
         raise FileNotFoundError(f"文件不存在: {file_path}")  # 不存在就立即报错，不让下游拿到空数据
 
-    df = pd.read_csv(path, encoding="utf-8-sig") # 用 utf-8-sig 编码读取（自动去掉 BOM 标记）
+    # 2. 尝试多种编码读取（用户 CSV 可能来自 Excel GBK 导出）
+    try:
+        df = pd.read_csv(path, encoding="utf-8-sig")  # 先试 utf-8-sig
+    except UnicodeDecodeError:
+        df = pd.read_csv(path, encoding="gbk")         # 失败则用 gbk（中文 Windows 常见编码）
     print(f"  [加载] {path.name}: {len(df)} 行, {len(df.columns)} 列")  # 日志：告诉用户读到了多少数据
     return df                                    # 返回 DataFrame 给调用方
 

@@ -94,17 +94,21 @@ def calculate_procurement(
         dict: 采购建议单行数据（最终会转成 DataFrame 的一行）
     """
     # 从输入行中提取关键参数
-    current_stock = inventory_row["当前库存"]            # 现在仓库里的量
-    in_transit = inventory_row["在途库存"]               # 已下单还没到的量
+    current_stock = inventory_row.get("国内库存", 0)      # 国内仓库存（新列名）
+    in_transit = inventory_row.get("在途库存", 0)          # 已下单还没到的量
+    fba_stock = inventory_row.get("FBA库存", 0)            # FBA 仓库存（新增）
     daily_demand = forecast_row["日均需求"]              # 日均销量（从库存计划拿来的）
     safety_stock = forecast_row["安全库存"]              # 安全库存基线
     target_inventory = forecast_row["目标库存"]          # 目标库存基线
 
+    # 总可用库存 = 国内库存 + 在途 + FBA 库存
+    total_stock = current_stock + in_transit + fba_stock
+
     # 提前期内的总消耗 = 每天卖这么多 × 30天
     demand_until_next = daily_demand * config.PROCUREMENT_LEAD_TIME
 
-    # 预计到货时的库存 = 现在有 + 路上有 − 30天内卖掉的
-    projected_stock = current_stock + in_transit - demand_until_next
+    # 预计到货时的库存 = 总库存 − 30天内卖掉的
+    projected_stock = total_stock - demand_until_next
 
     # 缺口 = 目标库存 − 预计到时库存（正数 = 缺货，负数 = 够用）
     suggested_qty = target_inventory - projected_stock
@@ -123,7 +127,7 @@ def calculate_procurement(
     return {                                               # 返回一个字典，对应采购计划表的一行
         "SKU": inventory_row["SKU"],                       # SKU 编码
         "再订货日期": next_rod.strftime("%Y-%m-%d"),        # ROD 日期（如"2026-01-01"）
-        "当前库存": current_stock,                          # 当前库存
+        "当前库存": total_stock,                            # 总库存（国内+FBA+在途）
         "在途库存": in_transit,                             # 在途库存
         "安全库存": safety_stock,                           # 安全库存基线
         "目标库存": target_inventory,                       # 目标库存基线

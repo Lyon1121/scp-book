@@ -74,11 +74,11 @@ def run_pipeline(
     # ---- 路径处理：未指定就用默认 ----
     data_dir = config.DATA_DIR if sales_path is None else Path(sales_path).parent  # 确定数据目录
     if sales_path is None:                               # 没传就用默认
-        sales_path = data_dir / "historical_sales.csv"
+        sales_path = data_dir / "Sales_data.csv"
     if manual_forecast_path is None:
-        manual_forecast_path = data_dir / "manual_forecast.csv"
+        manual_forecast_path = data_dir / "Sales_forecasting.csv"
     if inventory_path is None:
-        inventory_path = data_dir / "current_inventory.csv"
+        inventory_path = data_dir / "SKU_Stock.csv"
     if current_date is None:                             # 没传日期就用系统当前时间
         current_date = datetime.now()
 
@@ -109,7 +109,8 @@ def run_pipeline(
     )
 
     # ---- Step 5: 发货计划 ----
-    # 先合并库存数据和安全库存（发货计划需要知道安全库存来判断运输方式）
+    # 先合并库存数据和 FBA 库存（发货计划需要知道总库存来判断运输方式）
+    # SKU_Stock.csv 有: SKU, 国内库存, 在途库存, FBA库存
     df_inv_with_safety = df_inventory.merge(             # merge = INNER JOIN
         inventory_plan_df[["SKU", "安全库存"]],           # 只取 SKU + 安全库存两列
         on="SKU"                                         # 按 SKU 关联

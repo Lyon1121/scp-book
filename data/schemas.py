@@ -151,17 +151,17 @@ class ShipmentPlanResult:
 
 # ============================================================
 # 输入数据 Schema —— CSV 模板的列名定义
-# 这些类对应 sample_data/ 下的 CSV 文件结构
+# 这些类对应 data_input/ 下的 CSV 文件结构
 # ============================================================
 @dataclass
 class SalesInput:
     """
-    历史销量 CSV 列名（sample_data/historical_sales.csv）
+    历史销量 CSV 列名（data_input/Sales_data.csv）
 
-    每天每个 SKU 每个渠道一条记录
+    每天每个 SKU 每个渠道一条记录，日期格式：2024/1/1
     """
     SKU: str = "SKU"            # 产品编码
-    DATE: str = "日期"           # 销售日期，格式 YYYY-MM-DD
+    DATE: str = "日期"           # 销售日期，格式 2024/1/1（pd.to_datetime 兼容）
     SALES: str = "销量"          # 当日销量（件）
     CHANNEL: str = "渠道"        # 销售渠道："亚马逊" 或 "独立站"
 
@@ -169,40 +169,38 @@ class SalesInput:
 @dataclass
 class ManualForecastInput:
     """
-    销售人员月度人工预测 CSV 列名（sample_data/manual_forecast.csv）
+    销售人员月度人工预测 CSV 列名（data_input/Sales_forecasting.csv）
 
-    每月每个 SKU 一条记录
+    每月每个 SKU 一条记录，月份列名为「日期」（内容如 Jan-24），
     类型区分"历史"（用于计算达成率）和"未来"（用于与统计预测对比）
     """
     SKU: str = "SKU"               # 产品编码
-    PERIOD: str = "月份"            # 月份，格式 YYYY-MM，如 "2025-03"
-    FORECAST: str = "人工预测量"     # 销售人员预测该月销量
+    PERIOD: str = "日期"            # 月份标识，如 "Jan-24"（注意：此CSV列名是"日期"不是"月份"）
+    FORECAST: str = "预测值"        # 销售人员预测该月销量
     FORECAST_TYPE: str = "类型"     # "历史"（已发生，可对比实际）或 "未来"（未发生）
 
 
 @dataclass
 class InventoryInput:
     """
-    当前库存 CSV 列名（sample_data/current_inventory.csv）
+    库存快照 CSV 列名（data_input/SKU_Stock.csv）
 
-    记录此刻每个 SKU 各仓库的库存状态
+    记录每个 SKU 的三级库存状态：国内库存 + 在途库存 + FBA 库存
     """
     SKU: str = "SKU"               # 产品编码
-    STOCK: str = "当前库存"         # 仓库现有库存（可售 + 不可售）
-    IN_TRANSIT: str = "在途库存"    # 已下单采购但尚未入仓的数量
-    WAREHOUSE: str = "仓库"         # 仓库名称，如 "亚马逊主仓"
+    DOMESTIC_STOCK: str = "国内库存"  # 国内仓库现有库存
+    IN_TRANSIT: str = "在途库存"      # 已下单采购但尚未入仓的数量
+    FBA_STOCK: str = "FBA库存"        # 亚马逊 FBA 仓库库存（可售）
 
 
 @dataclass
 class ProductInput:
     """
-    产品主数据 CSV 列名（sample_data/product_master.csv）
+    产品主数据 CSV 列名（data_input/SKU_data.csv）
 
-    每个 SKU 一条记录，包含产品属性和采购参数
+    每个 SKU 一条记录，包含产品和人员信息
     """
-    SKU: str = "SKU"               # 产品编码（主键，关联所有表）
-    NAME: str = "产品名称"          # 中文产品名
-    CATEGORY: str = "品类"          # 产品品类，用于分组分析
-    LEAD_TIME: str = "提前期_天"    # 该 SKU 的采购提前期（天），可覆盖全局配置
-    MOQ: str = "最小起订量"         # 供应商要求的最小起订量（件）
-    COST: str = "成本单价"          # 采购成本单价（元/件）
+    SKU: str = "SKU"                # 产品编码（主键，关联所有表）
+    SKU_NAME: str = "SKU_NAME"      # 产品中文名称
+    SALES_OWNER: str = "销售负责人"  # 负责该 SKU 的销售人员
+    PRODUCT_OWNER: str = "产品负责人" # 负责该 SKU 的产品经理

@@ -11,6 +11,26 @@
 
 ---
 
+---
+
+## 2026-05-26 22:25
+
+### Changed
+- **数据源迁移**：从 `sample_data/` 迁移到 `data_input/`
+  - historical_sales.csv → Sales_data.csv（日期格式 `2024/1/1`）
+  - manual_forecast.csv → Sales_forecasting.csv（月份格式 `Jan-24`，预测值已填充）
+  - current_inventory.csv → SKU_Stock.csv（新增 FBA库存列）
+  - product_master.csv → SKU_data.csv（新增 销售负责人/产品负责人）
+- **库存模型升级**：供应计划和发货计划支持三级库存（国内库存 + 在途库存 + FBA库存）
+- **loader.py**：支持 GBK 编码自动回退
+
+### Fixed
+- `aggregate_to_monthly()` 日期格式兼容：`2024/1/1` → `Jan-24` 匹配 Sales_forecasting.csv
+- 管道验证：达成率 100.4%，MAPE 2.67%，四模块全部正常输出
+
+### Added
+- `fill_forecast.py`：预测值填充工具脚本
+
 ## 2026-05-26 20:51
 
 ### Added

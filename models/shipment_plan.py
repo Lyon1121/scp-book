@@ -93,11 +93,13 @@ def run_shipment_plan(
         inv_row = df_inventory[df_inventory["SKU"] == sku]  # 按 SKU 过滤
         if inv_row.empty:                                # 库存表里没有这个 SKU？跳过
             continue
-        current_stock = inv_row.iloc[0]["当前库存"]       # 取第一行（应该只有一行）的当前库存
-        safety_stock = inv_row.iloc[0].get("安全库存", 0)  # 取安全库存，没有就默认 0
+        current_stock = inv_row.iloc[0].get("国内库存", 0)  # 国内库存
+        fba_stock = inv_row.iloc[0].get("FBA库存", 0)       # FBA库存（新增）
+        total_stock = current_stock + fba_stock              # 总可用库存 = 国内 + FBA
+        safety_stock = inv_row.iloc[0].get("安全库存", 0)   # 取安全库存
 
-        # 步骤3: 判断运输方式（核心决策）
-        freight_mode, freight_days = determine_freight_mode(current_stock, safety_stock)
+        # 步骤3: 判断运输方式（核心决策），用总库存比较
+        freight_mode, freight_days = determine_freight_mode(total_stock, safety_stock)
 
         # 步骤4: 计算日期
         arrival_date = datetime.strptime(expected_arrival, "%Y-%m-%d")  # 字符串 → datetime 对象
