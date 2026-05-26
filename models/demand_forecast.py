@@ -61,8 +61,8 @@ def aggregate_to_monthly(df_sales: pd.DataFrame) -> pd.DataFrame:
     """
     si = SalesInput()                                    # 获取销量 CSV 的列名常量
     df = df_sales.copy()                                 # 复制一份，避免修改原始数据
-    # 日期格式兼容："2024/1/1" 或 "2024-01-01" → 统一转为 Jan-24 格式匹配 Sales_forecasting.csv
-    df["月份"] = pd.to_datetime(df[si.DATE]).dt.strftime("%b-%y")  # e.g. "Jan-24"
+    # 日期格式兼容："2024/1/1" 或 "2024-01-01" → 统一转为 YYYY-MM 格式匹配 Sales_forecasting.csv
+    df["月份"] = pd.to_datetime(df[si.DATE]).dt.strftime("%Y-%m")  # e.g. "2024-01"
     monthly = df.groupby([si.SKU, "月份"])[si.SALES].sum().reset_index()  # 按 (SKU, 月份) 分组求销量和
     monthly.rename(columns={si.SALES: "实际销量"}, inplace=True)  # 列名"销量" → "实际销量"，语义更清晰
     return monthly                                       # 返回月度数据
